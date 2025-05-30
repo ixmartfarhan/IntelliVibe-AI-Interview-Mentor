@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliVibe: The Emotionally Aware Interview Mentor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">IntelliVibe</h1>
+        <h5 class="text-center text-muted mb-4">The Emotionally Aware Interview Mentor</h5>
+
+        <!-- Live Video Feed -->
+        <div id="videoSection" class="text-center mb-3">
+            <h4>Live Video Feed</h4>
+            <!-- Use the 'video' tag without the src attribute, since we'll be setting the video stream via JavaScript -->
+            <video id="video" autoplay width="100%" style="max-width: 500px;"></video>
+        </div>
+        
+
+        <!-- Chat Log -->
+        <div class="chat-box mb-3">
+            <h4>Chat Log</h4>
+            <ul id="chat-log" class="list-group"></ul>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="d-flex justify-content-center mb-3 flex-wrap">
+            <button id="recordButton" class="btn btn-primary m-2">🎤 Start Voice Input</button>
+            <button id="sendButton" class="btn btn-success m-2">💬 Send Message</button>
+        </div>
+
+        <!-- Mode Selection -->
+        <div class="d-flex justify-content-center mb-3 flex-wrap">
+            <button id="videoButton" class="btn btn-warning m-2">👁️ Facial Emotion Detection</button>
+            <button id="audioButton" class="btn btn-danger m-2">🔊 Audio Emotion Detection</button>
+        </div>
+
+        <!-- Input Box -->
+        <input type="text" id="chatInput" class="form-control mb-3" placeholder="Type your message..." autocomplete="off" autofocus>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="text-center" style="display: none;">
+            <img src="https://i.gifer.com/YCZH.gif" alt="Loading..." width="50" height="50">
+        </div>
+
+        <!-- Emotion Display -->
+        <div id="emotionText" class="alert alert-info text-center mt-3">
+            Emotion detected will be displayed here.
+        </div>
+
+        <!-- Instructions -->
+        <div class="mt-3 text-muted">
+            <p>Use voice input to speak your responses or type in the box. The system will analyze your emotions and offer real-time feedback.</p>
+        </div>
+
+        <!-- Error Display -->
+        <div id="errorMessage" class="alert alert-danger mt-3" style="display: none;"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5 mb-3 text-muted">
+        <p>&copy; 2024 IntelliVibe. All Rights Reserved.</p>
+        <a href="https://github.com/" target="_blank">
+            <i class="fab fa-github"></i> GitHub
+        </a>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- <script src="static/script.js"></script> -->
+
+
+ 
+     <!-- <script>
+        let recognition;
+let isAnalyzing = false; // To handle loading state
+let videoStream; // To store the video stream
+let currentMode = "facial"; // Default to facial emotion detection
+
+// Function to start voice recognition
+function startVoiceRecognition() {
+    if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+        alert("Speech recognition is not supported in your browser.");
+        return;
+    }
+
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onresult = function (event) {
+        const transcript = event.results[0][0].transcript;
+        console.log("Recognized text: ", transcript);
+        document.getElementById("chatInput").value = transcript;
+        sendMessage(); // Automatically send the recognized message
+    };
+
+    recognition.onerror = function (event) {
+        handleError(`Speech recognition error: ${event.error}`);
+    };
+
+    recognition.onend = function () {
+        console.log("Speech recognition service disconnected");
+    };
+
+    recognition.start();
+}
+
+// Function to send a message
+function sendMessage() {
+    const chatInput = document.getElementById("chatInput");
+    const message = chatInput.value.trim();
+
+    if (message === "") {
+        handleError("Please enter a message before sending.");
+        return;
+    }
+
+    if (isAnalyzing) {
+        handleError("Emotion analysis is already in progress. Please wait.");
+        return;
+    }
+
+    isAnalyzing = true; // Set loading state to true
+    toggleLoadingIndicator(true); // Show loading indicator
+    disableInputs(true); // Disable inputs during processing
+
+    updateChatLog("You", message); // Add user message to the chat log
+
+    // Send the message to the backend for analysis
+    fetch(currentMode === "audio" ? '/analyze_audio' : '/analyze_facial', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            updateEmotionFeedback(data.emotion, data.feedback); // Update emotion feedback in the UI
+            updateChatLog("System", `Emotion detected: ${data.emotion} (${data.feedback})`);
+        })
+        .catch(error => {
+            handleError("Error sending message. Please try again.");
+            console.error("Error:", error);
+        })
+        .finally(() => {
+            isAnalyzing = false; // Reset loading state
+            toggleLoadingIndicator(false); // Hide loading indicator
+            disableInputs(false); // Re-enable inputs
+        });
+
+    chatInput.value = ""; // Clear the chat input after sending
+}
+
+// Function to toggle loading indicator
+function toggleLoadingIndicator(isLoading) {
+    const loader = document.getElementById("loadingIndicator");
+    loader.style.display = isLoading ? 'block' : 'none';
+}
+
+// Function to disable/enable inputs during processing
+function disableInputs(disable) {
+    document.getElementById("chatInput").disabled = disable;
+    document.getElementById("sendButton").disabled = disable;
+    document.getElementById("recordButton").disabled = disable;
+}
+
+// Function to update the chat log
+function updateChatLog(sender, message) {
+    const chatLog = document.getElementById("chat-log");
+    chatLog.innerHTML += `<li><strong>${sender}:</strong> ${message}</li>`;
+    chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll to the bottom
+}
+
+// Function to handle errors
+function handleError(message) {
+    alert(message);
+    console.error(message);
+}
+
+// Function to update emotion feedback
+function updateEmotionFeedback(emotion, feedback) {
+    const emotionText = document.getElementById("emotionText");
+    emotionText.textContent = `Emotion detected: ${emotion} (${feedback})`;
+}
+
+// Initialize video feed
+function initVideoFeed() {
+    const video = document.getElementById("video");
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+            videoStream = stream; // Store the video stream
+            startFacialDetection(); // Start facial detection by default
+        })
+        .catch(error => {
+            handleError("Error accessing camera. Please allow camera access.");
+            console.error("Camera Error:", error);
+        });
+}
+
+// Function to start facial emotion detection
+function startFacialDetection() {
+    const video = document.getElementById("video");
+    const faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+
+    faceMesh.setOptions({
+        maxFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+    });
+
+    faceMesh.onResults(onFaceMeshResults);
+
+    const camera = new Camera(video, {
+        onFrame: async () => {
+            await faceMesh.send({ image: video });
+        },
+        width: 640,
+        height: 480,
+    });
+
+    camera.start();
+}
+
+// Handle face mesh results and perform emotion detection
+function onFaceMeshResults(results) {
+    const emotionText = document.getElementById("emotionText");
+
+    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+        const detectedEmotion = "happy"; // Placeholder for detected emotion
+        emotionText.textContent = `Detected Facial Emotion: ${detectedEmotion}`;
+    } else {
+        emotionText.textContent = "No face detected. Please adjust your position.";
+    }
+}
+
+// Highlight the selected mode button
+function updateModeUI(activeButtonId) {
+    document.getElementById("facialButton").classList.remove("active");
+    document.getElementById("audioButton").classList.remove("active");
+    document.getElementById(activeButtonId).classList.add("active");
+}
+
+// Event Listeners for Mode Switching
+document.getElementById("facialButton").addEventListener("click", () => {
+    currentMode = "facial";
+    updateModeUI("facialButton");
+    document.getElementById("emotionText").textContent = "Switched to Facial Emotion Detection";
+});
+
+document.getElementById("audioButton").addEventListener("click", () => {
+    currentMode = "audio";
+    updateModeUI("audioButton");
+    document.getElementById("emotionText").textContent = "Switched to Audio Emotion Detection";
+});
+
+// Initialize video feed on page load
+document.addEventListener("DOMContentLoaded", initVideoFeed);
+
+const socket = io(); // Connect to the server
+// Update the emotion feedback display
+function updateEmotionFeedback(emotion, feedback) {
+    const emotionText = document.getElementById("emotionText");
+    emotionText.textContent = `Emotion detected: ${emotion} (${feedback})`;
+}
+
+// Handle errors
+function handleError(message) {
+    alert(message);
+    console.error(message);
+}
+
+// Emit emotion detection requests
+function detectEmotion() {
+    if (currentMode === "audio") {
+        const message = document.getElementById("chatInput").value.trim();
+        if (!message) {
+            handleError("Please enter a message for audio emotion detection.");
+            return;
+        }
+        socket.emit("detect_audio_emotion", { message });
+    } else {
+        socket.emit("detect_facial_emotion");
+    }
+}
+
+// Listen for real-time emotion updates
+socket.on("emotion_update", (data) => {
+    updateEmotionFeedback(data.emotion, data.feedback);
+});
+
+// Switch mode to facial
+document.getElementById("facialButton").addEventListener("click", () => {
+    currentMode = "facial";
+    document.getElementById("emotionText").textContent = "Switched to Facial Emotion Detection";
+});
+
+// Switch mode to audio
+document.getElementById("audioButton").addEventListener("click", () => {
+    currentMode = "audio";
+    document.getElementById("emotionText").textContent = "Switched to Audio Emotion Detection";
+});
+
+// Event listener for the "Send Message" button
+document.getElementById("sendButton").addEventListener("click", detectEmotion);
+
+
+// Event listeners for buttons
+document.getElementById("sendButton").addEventListener("click", sendMessage);
+document.getElementById("recordButton").addEventListener("click", startVoiceRecognition);
+
+     </script>
+      <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script> -->
+</body>
+
+</html>

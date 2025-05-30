@@ -1,0 +1,14 @@
+'''txt
+flask
+opencv-python
+mediapipe
+transformers
+torch
+gtts
+soundfile
+speechrecognition
+pydub
+tensorflow
+librosa
+numpy
+cv2

@@ -1,0 +1,220 @@
+/* Body Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Header */
+header {
+    background-color: #007bff;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 2px solid #0056b3;
+    margin-bottom: 20px;
+}
+
+/* Video Section */
+#videoSection {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+#video {
+    width: 100%;
+    height: auto;
+    max-width: 500px;
+    border-radius: 10px;
+    border: 2px solid #007bff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Chat Log */
+.chat-box {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.chat-box ul {
+    list-style: none;
+    padding: 0;
+}
+
+.chat-box li {
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    word-wrap: break-word;
+}
+
+.chat-box li:nth-child(odd) {
+    background-color: #dff9fb;
+}
+
+.chat-box li:nth-child(even) {
+    background-color: #f6e58d;
+}
+
+/* Buttons */
+.control-buttons {
+    gap: 1.5rem;
+    margin: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+#sendButton,
+#recordButton,
+#videoButton,
+#audioButton {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s;
+}
+
+#sendButton {
+    background-color: #00b894;
+}
+
+#recordButton {
+    background-color: #6c5ce7;
+}
+
+#videoButton {
+    background-color: #fdcb6e;
+}
+
+#audioButton {
+    background-color: #e84393;
+}
+
+/* Buttons Hover Effect */
+#sendButton:hover {
+    background-color: #00b894;
+    opacity: 0.8;
+}
+
+#recordButton:hover {
+    background-color: #6c5ce7;
+    opacity: 0.8;
+}
+
+#videoButton:hover {
+    background-color: #fdcb6e;
+    opacity: 0.8;
+}
+
+#audioButton:hover {
+    background-color: #e84393;
+    opacity: 0.8;
+}
+
+/* Loading Indicator */
+#loadingIndicator {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Emotion Text */
+#emotionText {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #636e72;
+    margin-top: 15px;
+    background-color: #f9e7d7;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* Footer */
+footer {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+}
+
+footer a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.2em;
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    color: #74b9ff;
+}
+
+/* Form Control Styling */
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #007bff;
+    font-size: 1em;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus {
+    border-color: #74b9ff;
+}
+
+/* Error Message */
+#errorMessage {
+    display: none;
+    background-color: #ff6b6b;
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* Toggle Buttons Active State */
+.btn.active {
+    border: 2px solid #007bff;
+    background-color: #74b9ff !important;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+    #videoSection {
+        padding: 15px;
+    }
+
+    .control-buttons {
+        flex-direction: column;
+    }
+
+    .chat-box {
+        max-height: 250px;
+        padding: 15px;
+    }
+
+    .control-buttons button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    input[type="text"] {
+        padding: 10px;
+    }
+}
